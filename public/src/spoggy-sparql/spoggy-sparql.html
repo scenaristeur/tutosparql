@@ -1,0 +1,90 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!-- import template repeater -->
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="spoggy-sparql">
+  <template>
+    <style>
+    :host {
+      display: block;
+    }
+    </style>
+
+    <iron-ajax
+    id="sparqlRequest"
+    url="{{url}}"
+    params="{{options}}"
+    handle-as="application/sparql-results+json"
+    on-response="_handleResponse"
+    on-error="_handleError"></iron-ajax>
+
+    <paper-button on-tap="executeRequete" raised> Executer la requête</paper-button>
+
+    <template is="dom-repeat" items="[[results]]">
+      <paper-item >[[item.p.value]]</paper-item>
+    </template>
+
+
+    <h2>Hello [[prop1]]!</h2>
+  </template>
+
+  <script>
+  /**
+  * `spoggy-sparql`
+  *
+  *
+  * @customElement
+  * @polymer
+  * @demo demo/index.html
+  */
+  class SpoggySparql extends Polymer.Element {
+    static get is() { return 'spoggy-sparql'; }
+    static get properties() {
+      return {
+        prop1: {
+          type: String,
+          value: 'spoggy-sparql'
+        },
+        url: {
+          type: String,
+          value: 'http://data.persee.fr/sparql'
+        },
+        options: {
+          type: Object,
+          value: {
+            query:  'select distinct ?p where {?p a foaf:Person} LIMIT 100',
+            format: 'application/sparql-results+json',
+          }
+        }
+      };
+    }
+
+    executeRequete(){
+      this.$.sparqlRequest.generateRequest()
+    }
+
+    _handleResponse(data){
+      console.log("Reponse Sparql");
+      //  console.log(data);
+      //  console.log(data.detail);
+      //  console.log(data.detail.error);
+      //  console.log(data.detail.error.message);
+      //  console.log(data.detail.request);
+      console.log(data.detail.response);
+      let response = JSON.parse(data.detail.response);
+      let link = response.head.link;
+      let vars = response.head.vars;
+      let results = response.results.bindings;
+      console.log(results);
+      this.results = results;
+    }
+  }
+
+  window.customElements.define(SpoggySparql.is, SpoggySparql);
+</script>
+</dom-module>
